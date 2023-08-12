@@ -1,9 +1,9 @@
+import { v4 as uuidv4 } from "uuid";
+
 export interface UUID {
   NewUUID: () => string;
 }
 
 export const MockUUIDGen = {
-  NewUUID: () => {
-    return "AAAA";
-  },
+  NewUUID: () => uuidv4(),
 };

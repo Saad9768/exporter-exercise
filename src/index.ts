@@ -1,26 +1,25 @@
-import { HBExporter, HBExporterDependencies } from "./exporter";
-
+import { HBExporter, HBExporterDependencies } from "./exporter/exporter";
 import { createClient } from "redis-mock";
-import { MockUUIDGen } from "./uuid";
-import { MockPermissions } from "./permissions";
+import { MockUUIDGen } from "./utils/uuid";
+import { MockPermissions } from "./permission/permissions";
 import { createReadStream } from "fs";
-import { NewMockLogger } from "./logger";
+import { NewMockLogger } from "./utils/logger";
 
-function mockOpenFile() {
-  return createReadStream("myexport.txt", {
+const logger = NewMockLogger("index");
+
+const mockOpenFile = () =>
+  createReadStream("myexport.txt", {
     encoding: "utf8",
     autoClose: true,
   });
-}
 
-function sleep(ms: number) {
-  return new Promise((resolve) => {
+const sleep = (ms: number) =>
+  new Promise((resolve) => {
     setTimeout(resolve, ms);
   });
-}
 
-async function StartApp() {
-  console.log("starting application");
+const StartApp = async () => {
+  logger("starting application");
   const redisClient = createClient();
   const exporterDeps: HBExporterDependencies = {
     cache: redisClient,
@@ -37,17 +36,22 @@ async function StartApp() {
   const exporter = HBExporter(exporterDeps);
 
   try {
-    exporter.StartExport(myUser, mockOpenFile());
+    const { id, stopExport } = await exporter.StartExport(
+      myUser,
+      mockOpenFile()
+    );
+
+    await sleep(200);
+    stopExport();
+    while (1) {
+      await sleep(500);
+      const result = await exporter.GetExportStatus(id);
+      logger(`Got Update :: `, result);
+    }
   } catch (e) {
     console.log(e);
   }
-
-  while (1) {
-    await sleep(500);
-    const res = await exporter.GetExportStatus(MockUUIDGen.NewUUID())
-    console.log(res)
-  }
-}
+};
 
 // Starting application...
 StartApp();

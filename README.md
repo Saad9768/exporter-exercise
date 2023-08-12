@@ -52,7 +52,7 @@ this functionality.
    We can talk through your design and architecture decisions during the next interview.
 2. The cancel existing import functionality should ideally **stop** an existing import. So no
    further bytes are piped from data source to the cache.
-4. Bonus points for helpful test coverage on new code.
+3. Bonus points for helpful test coverage on new code.
 
 ### Task 2b 🧪
 
@@ -101,3 +101,64 @@ Format code:
 ```shell
 yarn format
 ```
+
+### index.ts
+
+1. Bootstrap the application with depdencies in `startApp()`
+2. Start exporting with `exporter.StartExport`
+3. Get the status of the export with the help of `exporter.GetExportStatus`
+
+### exporter/exporter.ts
+
+=> `StartExport` inputs are `user` and `input stream`.User is authorized as well .It intialize the status to CREATED in redis based on key `exportId`. It also pipe the `input stream` to `newCacheWriter`. It return `status` and `stopExport` fuction <br>
+=> `stopExport` can be used to stop the export by closing the input stream. <br>
+=> `GetExportStatus` is used to get the latest `status` from redis. <br>
+=> `newCacheWriter` return writable. It appends the data (from the stream) to redis by key `exportid-data`. It also update the status to `PENDING` (while the write is in action). Final will change the status to `COMPLETED` and the expiry is set added accordingly. If the stream was not stop by the intiator. If the intiator stop the export by `stopExport` function. It will update the status to CANCELLED if the status is not COMPLETED and the expiry is set accordingly. <br>
+=> `addExpiry` adds the expiry to the redis cache <br>
+=> `updateStatus` adds the new status to the redis cache <br>
+=> `checkAndUpdate` It checks the status and also check that the status needs to be updated or not <br>
+
+### StopExport
+
+1. It will be done step wise
+2. `close` the `input stream` => Source needs to be closed
+3. `unpipe` the `writable stream` => It should be detached from the writable stream
+4. `destroy` the `writable stream` => It should destroy the writable stream to end the process. Destroy will not call final. final will only be called if the data is written successfully to the stream. Destroy event will be called anyways after the end event
+
+---
+
+Details about the project
+
+Exporter at a glance:
+
+1. This is a cache service. It is storing the data from the file to redis and setting a expiry of 60 min with a unique {exportid}. {exportid} is the unique used in redis to identify the cached data.
+
+2. User authorization is also performed before starting an export.
+
+3. Data can be very large and this is the reason data is fetched in stream or chunks
+
+4. Data is then pipe/append in to redis and expiry is added acording to the configuration. Once the transfer is completed to redis, it will change the status to COMPLETED
+   Data is stored as {exportid}-data as a key and status is stored against the {exportid} as key
+
+5. If the intiator wants to stop the export. stopExport funciton is returned. Iniator can use this function to cancel the export.
+
+6. StopExport will stop the stream/pipe/export and save the expiry to the redis. This will change the status to CANCELLED. If the status is already COMPLETED then it will not change the status to CANCELLED.
+
+7. There is GetExportStatus function which retreived the status of the given export id
+
+8. Expiry is added to status and data both
+
+Status are also updated to redis, status are explained below
+
+CREATED: This status is created when the export is just about to start. As the name suggest export is created.
+PENDING: The exporter is writing the data to redis. it also update the status to pending
+COMPLETED: The exporter has successfully updated the status.
+CANCELLED: Intiator has cancelled the exported before the status is completed
+
+More about the stopExport function
+This is returned to the intiator at the first time. Count is added so that the function is used only one time.
+
+Please find deep details about the files in the block diagram
+![Alt text](image.png)
+![Alt text](image-1.png)
+![Alt text](image-2.png)
