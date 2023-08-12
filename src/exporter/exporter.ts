@@ -32,6 +32,9 @@ export const HBExporter = ({
      */
     StartExport: async (user, data) => {
       try {
+        /**
+         * set,get,append,expire method with promise is bootstrap below
+         */
         const crud: REDIS_METHOD = redisCrudMethods(cache);
         logger(`Starting Export`);
         // authorize user
@@ -54,6 +57,9 @@ export const HBExporter = ({
         logger(`Export ${newStatus.status} for export id  :: ${exportId}`);
         await setData(exportId, crud, logger, JSON.stringify(newStatus));
         const writable = newCacheWriter(exportId, crud, logger);
+        /**
+         * This will attach the read stream to write stream
+         */
         data.pipe(writable);
         /*
           count is used stop stopExport function to call twice

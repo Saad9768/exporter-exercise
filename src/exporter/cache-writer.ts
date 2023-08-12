@@ -12,6 +12,8 @@ import { REDIS_METHOD } from "./redis-method";
  * @returns Writable
  * write function append the chunk to the redis.
  * final is called when write is succesfully completed.
+ * When the stop export is called. it will eventually unpipe the stream. 
+ * writable.on("unpipe") will be called and status will be updated to CANCELLED
  */
 
 export const newCacheWriter = (
@@ -38,9 +40,6 @@ export const newCacheWriter = (
       id: exportId,
     };
     await updateStatusAndExpiry(exportId, crud, logger, newStatus);
-  });
-  writable.on("close", () => {
-    logger(`writable Stream closed`);
   });
   return writable;
 };

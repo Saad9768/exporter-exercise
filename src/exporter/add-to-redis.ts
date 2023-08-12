@@ -55,6 +55,7 @@ const setData = async (
  * @param exportId
  * @param cache
  * @param logger
+ * This will update the status to status passed in the argruments only if the current status in redis is not COMPLETED
  */
 const updateStatusAndExpiry = async (
   exportId: string,
