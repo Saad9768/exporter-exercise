@@ -67,19 +67,27 @@ export const HBExporter = ({
         */
         let count = 0;
         const stopExport = () => {
-          logger(`stop export called count :: ${count + 1}`);
-          if (count == 0) {
-            data.close(async () => {
-              logger(`Input Stream closed`);
-              data.unpipe(writable);
-              writable.destroy();
-            });
-            count++;
+          try {
+            logger(`stop export called count :: ${count + 1}`);
+            if (count == 0) {
+              if (!data.closed) {
+                data.close(async () => {
+                  logger(`Input Stream closed`);
+                  data.unpipe(writable);
+                  if (!writable.destroyed) {
+                    writable.destroy();
+                  }
+                });
+              }
+              count++;
+            }
+          } catch (err) {
+            console.error("Error StopExport :: ", err);
           }
         };
         return { stopExport, ...newStatus };
       } catch (e) {
-        console.log("error");
+        console.error("error :: ", e);
         throw e;
       }
     },
