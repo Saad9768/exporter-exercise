@@ -4,7 +4,8 @@
   "description": "A coding challenge for the Heartbeat exporter",
   "scripts": {
     "format": "prettier --write .",
-    "start": "babel-node -x \".ts\" src/index.ts"
+    "start": "babel-node -x \".ts\" src/index.ts",
+    "test": "jest"
   },
   "author": {
     "name": "Christian Mellor",
@@ -23,9 +24,13 @@
     "@types/uuid": "^9.0.2",
     "prettier": "2.5.0",
     "redis-mock": "^0.56.3",
-    "typescript": "3.8.3"
+    "regenerator-runtime": "^0.14.0",
+    "typescript": "3.8.3",
+    "@types/jest": "^29.5.3",
+    "@types/mocha": "^10.0.1"
   },
   "dependencies": {
+    "jest": "^29.6.2",
     "redis": "^4.0.0",
     "uuid": "^9.0.0"
   }

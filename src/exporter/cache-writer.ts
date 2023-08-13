@@ -12,7 +12,7 @@ import { REDIS_METHOD } from "./redis-method";
  * @returns Writable
  * write function append the chunk to the redis.
  * final is called when write is succesfully completed.
- * When the stop export is called. it will eventually unpipe the stream. 
+ * When the stop export is called. it will eventually unpipe the stream.
  * writable.on("unpipe") will be called and status will be updated to CANCELLED
  */
 

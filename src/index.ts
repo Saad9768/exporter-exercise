@@ -4,6 +4,7 @@ import { MockUUIDGen } from "./utils/uuid";
 import { MockPermissions } from "./permission/permissions";
 import { createReadStream } from "fs";
 import { NewMockLogger } from "./utils/logger";
+import { sleep } from "./utils/index";
 
 const logger = NewMockLogger("index");
 
@@ -11,11 +12,6 @@ const mockOpenFile = () =>
   createReadStream("myexport.txt", {
     encoding: "utf8",
     autoClose: true,
-  });
-
-const sleep = (ms: number) =>
-  new Promise((resolve) => {
-    setTimeout(resolve, ms);
   });
 
 const StartApp = async () => {
@@ -36,13 +32,8 @@ const StartApp = async () => {
   const exporter = HBExporter(exporterDeps);
 
   try {
-    const { id, stopExport } = await exporter.StartExport(
-      myUser,
-      mockOpenFile()
-    );
+    const { id } = await exporter.StartExport(myUser, mockOpenFile());
 
-    await sleep(200);
-    stopExport();
     while (1) {
       await sleep(500);
       const result = await exporter.GetExportStatus(id);

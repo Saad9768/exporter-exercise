@@ -8,9 +8,9 @@ export type REDIS_METHOD = {
   append: (arg1: string, arg2: string) => Promise<number>;
 };
 /**
- * 
- * @param cache 
- * @returns 
+ *
+ * @param cache
+ * @returns
  * util.promisify will create a promise. cache instance is passed as a this keyword.
  * bind will create a new funtion and also has a redisclient instance with it.
  * set will create/overwrite the data for the key value pair in the redis.
